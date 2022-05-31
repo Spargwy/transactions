@@ -1,0 +1,9 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14.2
+    environment:
+      - POSTGRES_USER=staging
+      - POSTGRES_PASSWORD=staging
+    network_mode: "host"

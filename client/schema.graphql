@@ -1,0 +1,47 @@
+type ErrorPayload {
+  message: String!
+}
+
+type User {
+  ID: Int!
+  Balance: Float!
+}
+
+type Query {
+  # Так-то текущий пользователь определяется по токену,
+  # который передаёт клиент, но т.к. функционала аутентификации
+  # и авторизации нет, то просто через id. 
+  user(id: Int!): User
+}
+
+input WithdrawMoneyInput {
+  userID: Int!
+  # сумма в минимальных единицах валюты
+  Amount: Int!
+}
+
+input ReplenishTheBalanceInput {
+  userID: Int!
+  # сумма, в минимальных единицах валюты
+  Amount: Int!
+}
+
+type WithdrawMoneyPayload {
+  # списанная сумма в старших единицах(доллар, рубль)
+  amountWrittenOff: Float!
+  balance: Float!
+}
+
+type ReplenishTheBalancePayload {
+  # сумма пополнения в старших единицах(доллар, рубль)
+  replenishmentAmount: Float!
+  balance: Float!
+}
+
+union WithdrawMoneyOrErrorPayload = WithdrawMoneyPayload | ErrorPayload
+union ReplenishTheBalanceOrErrorPayload = ReplenishTheBalancePayload | ErrorPayload
+
+type Mutation {
+  WithdrawMoney(input: WithdrawMoneyInput): WithdrawMoneyOrErrorPayload!
+  ReplenishTheBalance(input: ReplenishTheBalanceInput): ReplenishTheBalanceOrErrorPayload!
+}
