@@ -8,14 +8,13 @@ import (
 	"fmt"
 	generated1 "transactions/graph/generated"
 	"transactions/model"
-	model1 "transactions/model"
 )
 
-func (r *mutationResolver) WithdrawMoney(ctx context.Context, input *model1.WithdrawMoneyInput) (model1.WithdrawMoneyOrErrorPayload, error) {
+func (r *mutationResolver) WithdrawMoney(ctx context.Context, input *model.WithdrawMoneyInput) (model.WithdrawMoneyOrErrorPayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ReplenishTheBalance(ctx context.Context, input *model1.ReplenishTheBalanceInput) (model1.ReplenishTheBalanceOrErrorPayload, error) {
+func (r *mutationResolver) ReplenishTheBalance(ctx context.Context, input *model.ReplenishTheBalanceInput) (model.ReplenishTheBalanceOrErrorPayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
