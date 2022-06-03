@@ -11,5 +11,5 @@
 ## Run:
 - `docker-compose up -d postgres`
 - `dbmate up`
--  make apply
+-  `make apply`
 - `cd client && ./scripts dev`
