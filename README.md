@@ -17,5 +17,5 @@
 ## Run:
 - `docker-compose up -d postgres`
 - `dbmate up`
-- `make apply` - create user
+- `make apply` - create user(its possible from api)
 - `cd client && ./scripts dev`
