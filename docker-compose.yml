@@ -1,6 +1,10 @@
 version: '3.9'
 
 services:
+  rabbit: 
+    image: rabbitmq:latest
+    network_mode: "host"
+
   postgres:
     image: postgres:14.2
     environment:

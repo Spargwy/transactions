@@ -3,8 +3,9 @@ type ErrorPayload {
 }
 
 type User {
-  ID: Int!
-  Balance: Float!
+  id: Int!
+  name: String
+  balance: Int!
 }
 
 type Query {
@@ -17,31 +18,39 @@ type Query {
 input WithdrawMoneyInput {
   userID: Int!
   # сумма в минимальных единицах валюты
-  Amount: Int!
+  amount: Int!
 }
 
 input ReplenishTheBalanceInput {
   userID: Int!
   # сумма, в минимальных единицах валюты
-  Amount: Int!
+  amount: Int!
+}
+
+input RegisterUserInput {
+  name: String
 }
 
 type WithdrawMoneyPayload {
-  # списанная сумма в старших единицах(доллар, рубль)
-  amountWrittenOff: Float!
-  balance: Float!
+  amountWrittenOff: Int!
+  userID: Int!
 }
 
 type ReplenishTheBalancePayload {
-  # сумма пополнения в старших единицах(доллар, рубль)
-  replenishmentAmount: Float!
-  balance: Float!
+  replenishmentAmount: Int!
+  userID: Int!
 }
 
+type RegisterUserPayload {
+  user: User!
+}
+
+union RegisterUserOrErrorPayload = RegisterUserPayload | ErrorPayload
 union WithdrawMoneyOrErrorPayload = WithdrawMoneyPayload | ErrorPayload
 union ReplenishTheBalanceOrErrorPayload = ReplenishTheBalancePayload | ErrorPayload
 
 type Mutation {
-  WithdrawMoney(input: WithdrawMoneyInput): WithdrawMoneyOrErrorPayload!
-  ReplenishTheBalance(input: ReplenishTheBalanceInput): ReplenishTheBalanceOrErrorPayload!
+  withdrawMoney(input: WithdrawMoneyInput!): WithdrawMoneyOrErrorPayload!
+  replenishTheBalance(input: ReplenishTheBalanceInput!): ReplenishTheBalanceOrErrorPayload!
+  registerUser(input: RegisterUserInput!): RegisterUserOrErrorPayload!
 }

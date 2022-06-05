@@ -10,6 +10,18 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: operation_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.operation_status AS ENUM (
+    'received',
+    'in progress',
+    'processed',
+    'failed'
+);
+
+
+--
 -- Name: operation_type; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -38,11 +50,14 @@ CREATE TABLE public.schema_migrations (
 
 CREATE TABLE public.transactions (
     id integer NOT NULL,
-    userid integer NOT NULL,
-    operation public.operation_type,
-    balance_before integer NOT NULL,
-    balance_after integer NOT NULL,
-    amount integer NOT NULL
+    user_id integer NOT NULL,
+    operation public.operation_type NOT NULL,
+    balance_before integer,
+    balance_after integer,
+    amount integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    finished_at timestamp with time zone,
+    status public.operation_status DEFAULT 'received'::public.operation_status NOT NULL
 );
 
 
@@ -72,7 +87,8 @@ ALTER SEQUENCE public.transactions_id_seq OWNED BY public.transactions.id;
 
 CREATE TABLE public.users (
     id integer NOT NULL,
-    balance integer NOT NULL
+    name text,
+    balance integer
 );
 
 
@@ -135,11 +151,11 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: transactions transactions_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: transactions transactions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT transactions_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(id);
+    ADD CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -152,5 +168,5 @@ ALTER TABLE ONLY public.transactions
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20220531043333'),
-    ('20220531043808');
+    ('20220605132320'),
+    ('20220605132337');

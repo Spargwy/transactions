@@ -23,6 +23,7 @@ func main() {
 	}
 
 	env := environment.New()
+
 	err := env.DBPing()
 	if err != nil {
 		log.Fatalf("failed DBPing: %v", err)

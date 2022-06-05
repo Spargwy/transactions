@@ -8,7 +8,14 @@
 - [reflex](https://github.com/cespare/reflex) for server reload at editing or crushes
 - RabbitMQ
 
+## Setup:
+- Install and setup [golang](https://go.dev/)
+- `git clone https://github.com/Spargwy/transactions`
+- `cd transactions`
+- `go mod tidy`
+
 ## Run:
 - `docker-compose up -d postgres`
 - `dbmate up`
+- `make apply` - create user
 - `cd client && ./scripts dev`

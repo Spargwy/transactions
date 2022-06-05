@@ -2,6 +2,10 @@
 
 package model
 
+type RegisterUserOrErrorPayload interface {
+	IsRegisterUserOrErrorPayload()
+}
+
 type ReplenishTheBalanceOrErrorPayload interface {
 	IsReplenishTheBalanceOrErrorPayload()
 }
@@ -14,29 +18,40 @@ type ErrorPayload struct {
 	Message string `json:"message"`
 }
 
+func (ErrorPayload) IsRegisterUserOrErrorPayload()        {}
 func (ErrorPayload) IsWithdrawMoneyOrErrorPayload()       {}
 func (ErrorPayload) IsReplenishTheBalanceOrErrorPayload() {}
 
+type RegisterUserInput struct {
+	Name *string `json:"name"`
+}
+
+type RegisterUserPayload struct {
+	User *User `json:"user"`
+}
+
+func (RegisterUserPayload) IsRegisterUserOrErrorPayload() {}
+
 type ReplenishTheBalanceInput struct {
 	UserID int `json:"userID"`
-	Amount int `json:"Amount"`
+	Amount int `json:"amount"`
 }
 
 type ReplenishTheBalancePayload struct {
-	ReplenishmentAmount float64 `json:"replenishmentAmount"`
-	Balance             float64 `json:"balance"`
+	ReplenishmentAmount int `json:"replenishmentAmount"`
+	UserID              int `json:"userID"`
 }
 
 func (ReplenishTheBalancePayload) IsReplenishTheBalanceOrErrorPayload() {}
 
 type WithdrawMoneyInput struct {
 	UserID int `json:"userID"`
-	Amount int `json:"Amount"`
+	Amount int `json:"amount"`
 }
 
 type WithdrawMoneyPayload struct {
-	AmountWrittenOff float64 `json:"amountWrittenOff"`
-	Balance          float64 `json:"balance"`
+	AmountWrittenOff int `json:"amountWrittenOff"`
+	UserID           int `json:"userID"`
 }
 
 func (WithdrawMoneyPayload) IsWithdrawMoneyOrErrorPayload() {}

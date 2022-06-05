@@ -48,33 +48,40 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ReplenishTheBalance func(childComplexity int, input *model.ReplenishTheBalanceInput) int
-		WithdrawMoney       func(childComplexity int, input *model.WithdrawMoneyInput) int
+		RegisterUser        func(childComplexity int, input model.RegisterUserInput) int
+		ReplenishTheBalance func(childComplexity int, input model.ReplenishTheBalanceInput) int
+		WithdrawMoney       func(childComplexity int, input model.WithdrawMoneyInput) int
 	}
 
 	Query struct {
 		User func(childComplexity int, id int) int
 	}
 
+	RegisterUserPayload struct {
+		User func(childComplexity int) int
+	}
+
 	ReplenishTheBalancePayload struct {
-		Balance             func(childComplexity int) int
 		ReplenishmentAmount func(childComplexity int) int
+		UserID              func(childComplexity int) int
 	}
 
 	User struct {
 		Balance func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Name    func(childComplexity int) int
 	}
 
 	WithdrawMoneyPayload struct {
 		AmountWrittenOff func(childComplexity int) int
-		Balance          func(childComplexity int) int
+		UserID           func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
-	WithdrawMoney(ctx context.Context, input *model.WithdrawMoneyInput) (model.WithdrawMoneyOrErrorPayload, error)
-	ReplenishTheBalance(ctx context.Context, input *model.ReplenishTheBalanceInput) (model.ReplenishTheBalanceOrErrorPayload, error)
+	WithdrawMoney(ctx context.Context, input model.WithdrawMoneyInput) (model.WithdrawMoneyOrErrorPayload, error)
+	ReplenishTheBalance(ctx context.Context, input model.ReplenishTheBalanceInput) (model.ReplenishTheBalanceOrErrorPayload, error)
+	RegisterUser(ctx context.Context, input model.RegisterUserInput) (model.RegisterUserOrErrorPayload, error)
 }
 type QueryResolver interface {
 	User(ctx context.Context, id int) (*model.User, error)
@@ -102,29 +109,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ErrorPayload.Message(childComplexity), true
 
-	case "Mutation.ReplenishTheBalance":
+	case "Mutation.registerUser":
+		if e.complexity.Mutation.RegisterUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_registerUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RegisterUser(childComplexity, args["input"].(model.RegisterUserInput)), true
+
+	case "Mutation.replenishTheBalance":
 		if e.complexity.Mutation.ReplenishTheBalance == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_ReplenishTheBalance_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_replenishTheBalance_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ReplenishTheBalance(childComplexity, args["input"].(*model.ReplenishTheBalanceInput)), true
+		return e.complexity.Mutation.ReplenishTheBalance(childComplexity, args["input"].(model.ReplenishTheBalanceInput)), true
 
-	case "Mutation.WithdrawMoney":
+	case "Mutation.withdrawMoney":
 		if e.complexity.Mutation.WithdrawMoney == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_WithdrawMoney_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_withdrawMoney_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.WithdrawMoney(childComplexity, args["input"].(*model.WithdrawMoneyInput)), true
+		return e.complexity.Mutation.WithdrawMoney(childComplexity, args["input"].(model.WithdrawMoneyInput)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -138,12 +157,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.User(childComplexity, args["id"].(int)), true
 
-	case "ReplenishTheBalancePayload.balance":
-		if e.complexity.ReplenishTheBalancePayload.Balance == nil {
+	case "RegisterUserPayload.user":
+		if e.complexity.RegisterUserPayload.User == nil {
 			break
 		}
 
-		return e.complexity.ReplenishTheBalancePayload.Balance(childComplexity), true
+		return e.complexity.RegisterUserPayload.User(childComplexity), true
 
 	case "ReplenishTheBalancePayload.replenishmentAmount":
 		if e.complexity.ReplenishTheBalancePayload.ReplenishmentAmount == nil {
@@ -152,19 +171,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ReplenishTheBalancePayload.ReplenishmentAmount(childComplexity), true
 
-	case "User.Balance":
+	case "ReplenishTheBalancePayload.userID":
+		if e.complexity.ReplenishTheBalancePayload.UserID == nil {
+			break
+		}
+
+		return e.complexity.ReplenishTheBalancePayload.UserID(childComplexity), true
+
+	case "User.balance":
 		if e.complexity.User.Balance == nil {
 			break
 		}
 
 		return e.complexity.User.Balance(childComplexity), true
 
-	case "User.ID":
+	case "User.id":
 		if e.complexity.User.ID == nil {
 			break
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "User.name":
+		if e.complexity.User.Name == nil {
+			break
+		}
+
+		return e.complexity.User.Name(childComplexity), true
 
 	case "WithdrawMoneyPayload.amountWrittenOff":
 		if e.complexity.WithdrawMoneyPayload.AmountWrittenOff == nil {
@@ -173,12 +206,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.WithdrawMoneyPayload.AmountWrittenOff(childComplexity), true
 
-	case "WithdrawMoneyPayload.balance":
-		if e.complexity.WithdrawMoneyPayload.Balance == nil {
+	case "WithdrawMoneyPayload.userID":
+		if e.complexity.WithdrawMoneyPayload.UserID == nil {
 			break
 		}
 
-		return e.complexity.WithdrawMoneyPayload.Balance(childComplexity), true
+		return e.complexity.WithdrawMoneyPayload.UserID(childComplexity), true
 
 	}
 	return 0, false
@@ -188,6 +221,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputRegisterUserInput,
 		ec.unmarshalInputReplenishTheBalanceInput,
 		ec.unmarshalInputWithdrawMoneyInput,
 	)
@@ -255,8 +289,9 @@ var sources = []*ast.Source{
 }
 
 type User {
-  ID: Int!
-  Balance: Float!
+  id: Int!
+  name: String
+  balance: Int!
 }
 
 type Query {
@@ -269,33 +304,41 @@ type Query {
 input WithdrawMoneyInput {
   userID: Int!
   # сумма в минимальных единицах валюты
-  Amount: Int!
+  amount: Int!
 }
 
 input ReplenishTheBalanceInput {
   userID: Int!
   # сумма, в минимальных единицах валюты
-  Amount: Int!
+  amount: Int!
+}
+
+input RegisterUserInput {
+  name: String
 }
 
 type WithdrawMoneyPayload {
-  # списанная сумма в старших единицах(доллар, рубль)
-  amountWrittenOff: Float!
-  balance: Float!
+  amountWrittenOff: Int!
+  userID: Int!
 }
 
 type ReplenishTheBalancePayload {
-  # сумма пополнения в старших единицах(доллар, рубль)
-  replenishmentAmount: Float!
-  balance: Float!
+  replenishmentAmount: Int!
+  userID: Int!
 }
 
+type RegisterUserPayload {
+  user: User!
+}
+
+union RegisterUserOrErrorPayload = RegisterUserPayload | ErrorPayload
 union WithdrawMoneyOrErrorPayload = WithdrawMoneyPayload | ErrorPayload
 union ReplenishTheBalanceOrErrorPayload = ReplenishTheBalancePayload | ErrorPayload
 
 type Mutation {
-  WithdrawMoney(input: WithdrawMoneyInput): WithdrawMoneyOrErrorPayload!
-  ReplenishTheBalance(input: ReplenishTheBalanceInput): ReplenishTheBalanceOrErrorPayload!
+  withdrawMoney(input: WithdrawMoneyInput!): WithdrawMoneyOrErrorPayload!
+  replenishTheBalance(input: ReplenishTheBalanceInput!): ReplenishTheBalanceOrErrorPayload!
+  registerUser(input: RegisterUserInput!): RegisterUserOrErrorPayload!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -304,13 +347,13 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_ReplenishTheBalance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.ReplenishTheBalanceInput
+	var arg0 model.RegisterUserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOReplenishTheBalanceInput2ᚖtransactionsᚋmodelᚐReplenishTheBalanceInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRegisterUserInput2transactionsᚋmodelᚐRegisterUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -319,13 +362,28 @@ func (ec *executionContext) field_Mutation_ReplenishTheBalance_args(ctx context.
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_WithdrawMoney_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_replenishTheBalance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.WithdrawMoneyInput
+	var arg0 model.ReplenishTheBalanceInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOWithdrawMoneyInput2ᚖtransactionsᚋmodelᚐWithdrawMoneyInput(ctx, tmp)
+		arg0, err = ec.unmarshalNReplenishTheBalanceInput2transactionsᚋmodelᚐReplenishTheBalanceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_withdrawMoney_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.WithdrawMoneyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNWithdrawMoneyInput2transactionsᚋmodelᚐWithdrawMoneyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -446,8 +504,8 @@ func (ec *executionContext) fieldContext_ErrorPayload_message(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_WithdrawMoney(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_WithdrawMoney(ctx, field)
+func (ec *executionContext) _Mutation_withdrawMoney(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_withdrawMoney(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -460,7 +518,7 @@ func (ec *executionContext) _Mutation_WithdrawMoney(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().WithdrawMoney(rctx, fc.Args["input"].(*model.WithdrawMoneyInput))
+		return ec.resolvers.Mutation().WithdrawMoney(rctx, fc.Args["input"].(model.WithdrawMoneyInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -477,7 +535,7 @@ func (ec *executionContext) _Mutation_WithdrawMoney(ctx context.Context, field g
 	return ec.marshalNWithdrawMoneyOrErrorPayload2transactionsᚋmodelᚐWithdrawMoneyOrErrorPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_WithdrawMoney(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_withdrawMoney(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -494,15 +552,15 @@ func (ec *executionContext) fieldContext_Mutation_WithdrawMoney(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_WithdrawMoney_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_withdrawMoney_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_ReplenishTheBalance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_ReplenishTheBalance(ctx, field)
+func (ec *executionContext) _Mutation_replenishTheBalance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_replenishTheBalance(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -515,7 +573,7 @@ func (ec *executionContext) _Mutation_ReplenishTheBalance(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ReplenishTheBalance(rctx, fc.Args["input"].(*model.ReplenishTheBalanceInput))
+		return ec.resolvers.Mutation().ReplenishTheBalance(rctx, fc.Args["input"].(model.ReplenishTheBalanceInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -532,7 +590,7 @@ func (ec *executionContext) _Mutation_ReplenishTheBalance(ctx context.Context, f
 	return ec.marshalNReplenishTheBalanceOrErrorPayload2transactionsᚋmodelᚐReplenishTheBalanceOrErrorPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_ReplenishTheBalance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_replenishTheBalance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -549,7 +607,62 @@ func (ec *executionContext) fieldContext_Mutation_ReplenishTheBalance(ctx contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_ReplenishTheBalance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_replenishTheBalance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_registerUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_registerUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RegisterUser(rctx, fc.Args["input"].(model.RegisterUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.RegisterUserOrErrorPayload)
+	fc.Result = res
+	return ec.marshalNRegisterUserOrErrorPayload2transactionsᚋmodelᚐRegisterUserOrErrorPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_registerUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RegisterUserOrErrorPayload does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_registerUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -592,10 +705,12 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "ID":
-				return ec.fieldContext_User_ID(ctx, field)
-			case "Balance":
-				return ec.fieldContext_User_Balance(ctx, field)
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "balance":
+				return ec.fieldContext_User_balance(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -743,6 +858,58 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _RegisterUserPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.RegisterUserPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RegisterUserPayload_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖtransactionsᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RegisterUserPayload_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RegisterUserPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "balance":
+				return ec.fieldContext_User_balance(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ReplenishTheBalancePayload_replenishmentAmount(ctx context.Context, field graphql.CollectedField, obj *model.ReplenishTheBalancePayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ReplenishTheBalancePayload_replenishmentAmount(ctx, field)
 	if err != nil {
@@ -769,9 +936,9 @@ func (ec *executionContext) _ReplenishTheBalancePayload_replenishmentAmount(ctx 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ReplenishTheBalancePayload_replenishmentAmount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -781,14 +948,14 @@ func (ec *executionContext) fieldContext_ReplenishTheBalancePayload_replenishmen
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _ReplenishTheBalancePayload_balance(ctx context.Context, field graphql.CollectedField, obj *model.ReplenishTheBalancePayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ReplenishTheBalancePayload_balance(ctx, field)
+func (ec *executionContext) _ReplenishTheBalancePayload_userID(ctx context.Context, field graphql.CollectedField, obj *model.ReplenishTheBalancePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReplenishTheBalancePayload_userID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -801,7 +968,7 @@ func (ec *executionContext) _ReplenishTheBalancePayload_balance(ctx context.Cont
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Balance, nil
+		return obj.UserID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -813,26 +980,26 @@ func (ec *executionContext) _ReplenishTheBalancePayload_balance(ctx context.Cont
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ReplenishTheBalancePayload_balance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ReplenishTheBalancePayload_userID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ReplenishTheBalancePayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _User_ID(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_ID(ctx, field)
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -862,7 +1029,7 @@ func (ec *executionContext) _User_ID(ctx context.Context, field graphql.Collecte
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_ID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -875,8 +1042,49 @@ func (ec *executionContext) fieldContext_User_ID(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_Balance(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_Balance(ctx, field)
+func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_balance(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_balance(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -901,19 +1109,19 @@ func (ec *executionContext) _User_Balance(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_Balance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_balance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -945,9 +1153,9 @@ func (ec *executionContext) _WithdrawMoneyPayload_amountWrittenOff(ctx context.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_WithdrawMoneyPayload_amountWrittenOff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -957,14 +1165,14 @@ func (ec *executionContext) fieldContext_WithdrawMoneyPayload_amountWrittenOff(c
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _WithdrawMoneyPayload_balance(ctx context.Context, field graphql.CollectedField, obj *model.WithdrawMoneyPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_WithdrawMoneyPayload_balance(ctx, field)
+func (ec *executionContext) _WithdrawMoneyPayload_userID(ctx context.Context, field graphql.CollectedField, obj *model.WithdrawMoneyPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WithdrawMoneyPayload_userID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -977,7 +1185,7 @@ func (ec *executionContext) _WithdrawMoneyPayload_balance(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Balance, nil
+		return obj.UserID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -989,19 +1197,19 @@ func (ec *executionContext) _WithdrawMoneyPayload_balance(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_WithdrawMoneyPayload_balance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_WithdrawMoneyPayload_userID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "WithdrawMoneyPayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2780,6 +2988,29 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputRegisterUserInput(ctx context.Context, obj interface{}) (model.RegisterUserInput, error) {
+	var it model.RegisterUserInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputReplenishTheBalanceInput(ctx context.Context, obj interface{}) (model.ReplenishTheBalanceInput, error) {
 	var it model.ReplenishTheBalanceInput
 	asMap := map[string]interface{}{}
@@ -2797,10 +3028,10 @@ func (ec *executionContext) unmarshalInputReplenishTheBalanceInput(ctx context.C
 			if err != nil {
 				return it, err
 			}
-		case "Amount":
+		case "amount":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Amount"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
 			it.Amount, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
@@ -2828,10 +3059,10 @@ func (ec *executionContext) unmarshalInputWithdrawMoneyInput(ctx context.Context
 			if err != nil {
 				return it, err
 			}
-		case "Amount":
+		case "amount":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Amount"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
 			it.Amount, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
@@ -2845,6 +3076,29 @@ func (ec *executionContext) unmarshalInputWithdrawMoneyInput(ctx context.Context
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
+
+func (ec *executionContext) _RegisterUserOrErrorPayload(ctx context.Context, sel ast.SelectionSet, obj model.RegisterUserOrErrorPayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.RegisterUserPayload:
+		return ec._RegisterUserPayload(ctx, sel, &obj)
+	case *model.RegisterUserPayload:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._RegisterUserPayload(ctx, sel, obj)
+	case model.ErrorPayload:
+		return ec._ErrorPayload(ctx, sel, &obj)
+	case *model.ErrorPayload:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ErrorPayload(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
 
 func (ec *executionContext) _ReplenishTheBalanceOrErrorPayload(ctx context.Context, sel ast.SelectionSet, obj model.ReplenishTheBalanceOrErrorPayload) graphql.Marshaler {
 	switch obj := (obj).(type) {
@@ -2896,7 +3150,7 @@ func (ec *executionContext) _WithdrawMoneyOrErrorPayload(ctx context.Context, se
 
 // region    **************************** object.gotpl ****************************
 
-var errorPayloadImplementors = []string{"ErrorPayload", "WithdrawMoneyOrErrorPayload", "ReplenishTheBalanceOrErrorPayload"}
+var errorPayloadImplementors = []string{"ErrorPayload", "RegisterUserOrErrorPayload", "WithdrawMoneyOrErrorPayload", "ReplenishTheBalanceOrErrorPayload"}
 
 func (ec *executionContext) _ErrorPayload(ctx context.Context, sel ast.SelectionSet, obj *model.ErrorPayload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, errorPayloadImplementors)
@@ -2943,19 +3197,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "WithdrawMoney":
+		case "withdrawMoney":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_WithdrawMoney(ctx, field)
+				return ec._Mutation_withdrawMoney(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "ReplenishTheBalance":
+		case "replenishTheBalance":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_ReplenishTheBalance(ctx, field)
+				return ec._Mutation_replenishTheBalance(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "registerUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_registerUser(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -3034,6 +3297,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var registerUserPayloadImplementors = []string{"RegisterUserPayload", "RegisterUserOrErrorPayload"}
+
+func (ec *executionContext) _RegisterUserPayload(ctx context.Context, sel ast.SelectionSet, obj *model.RegisterUserPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, registerUserPayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RegisterUserPayload")
+		case "user":
+
+			out.Values[i] = ec._RegisterUserPayload_user(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var replenishTheBalancePayloadImplementors = []string{"ReplenishTheBalancePayload", "ReplenishTheBalanceOrErrorPayload"}
 
 func (ec *executionContext) _ReplenishTheBalancePayload(ctx context.Context, sel ast.SelectionSet, obj *model.ReplenishTheBalancePayload) graphql.Marshaler {
@@ -3051,9 +3342,9 @@ func (ec *executionContext) _ReplenishTheBalancePayload(ctx context.Context, sel
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "balance":
+		case "userID":
 
-			out.Values[i] = ec._ReplenishTheBalancePayload_balance(ctx, field, obj)
+			out.Values[i] = ec._ReplenishTheBalancePayload_userID(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3079,16 +3370,20 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("User")
-		case "ID":
+		case "id":
 
-			out.Values[i] = ec._User_ID(ctx, field, obj)
+			out.Values[i] = ec._User_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Balance":
+		case "name":
 
-			out.Values[i] = ec._User_Balance(ctx, field, obj)
+			out.Values[i] = ec._User_name(ctx, field, obj)
+
+		case "balance":
+
+			out.Values[i] = ec._User_balance(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3121,9 +3416,9 @@ func (ec *executionContext) _WithdrawMoneyPayload(ctx context.Context, sel ast.S
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "balance":
+		case "userID":
 
-			out.Values[i] = ec._WithdrawMoneyPayload_balance(ctx, field, obj)
+			out.Values[i] = ec._WithdrawMoneyPayload_userID(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3472,21 +3767,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3500,6 +3780,26 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNRegisterUserInput2transactionsᚋmodelᚐRegisterUserInput(ctx context.Context, v interface{}) (model.RegisterUserInput, error) {
+	res, err := ec.unmarshalInputRegisterUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRegisterUserOrErrorPayload2transactionsᚋmodelᚐRegisterUserOrErrorPayload(ctx context.Context, sel ast.SelectionSet, v model.RegisterUserOrErrorPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RegisterUserOrErrorPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNReplenishTheBalanceInput2transactionsᚋmodelᚐReplenishTheBalanceInput(ctx context.Context, v interface{}) (model.ReplenishTheBalanceInput, error) {
+	res, err := ec.unmarshalInputReplenishTheBalanceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNReplenishTheBalanceOrErrorPayload2transactionsᚋmodelᚐReplenishTheBalanceOrErrorPayload(ctx context.Context, sel ast.SelectionSet, v model.ReplenishTheBalanceOrErrorPayload) graphql.Marshaler {
@@ -3525,6 +3825,21 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2ᚖtransactionsᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNWithdrawMoneyInput2transactionsᚋmodelᚐWithdrawMoneyInput(ctx context.Context, v interface{}) (model.WithdrawMoneyInput, error) {
+	res, err := ec.unmarshalInputWithdrawMoneyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNWithdrawMoneyOrErrorPayload2transactionsᚋmodelᚐWithdrawMoneyOrErrorPayload(ctx context.Context, sel ast.SelectionSet, v model.WithdrawMoneyOrErrorPayload) graphql.Marshaler {
@@ -3816,14 +4131,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalOReplenishTheBalanceInput2ᚖtransactionsᚋmodelᚐReplenishTheBalanceInput(ctx context.Context, v interface{}) (*model.ReplenishTheBalanceInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputReplenishTheBalanceInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -3845,14 +4152,6 @@ func (ec *executionContext) marshalOUser2ᚖtransactionsᚋmodelᚐUser(ctx cont
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOWithdrawMoneyInput2ᚖtransactionsᚋmodelᚐWithdrawMoneyInput(ctx context.Context, v interface{}) (*model.WithdrawMoneyInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputWithdrawMoneyInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

@@ -8,7 +8,7 @@ import (
 	"github.com/go-pg/pg/v10"
 )
 
-func dbConnect(connectionString, appEnv string) *pg.DB {
+func dbConnect(connectionString string) *pg.DB {
 	opt, err := pg.ParseURL(connectionString)
 	if err != nil {
 		log.Fatalf("failed ParseURL: %v", err)
@@ -29,5 +29,40 @@ func (e *Env) GetUserByID(id int) (*model.User, error) {
 	if err == pg.ErrNoRows {
 		return nil, nil
 	}
+
 	return &row, err
+}
+
+func (e *Env) GetAllUsers() ([]model.User, error) {
+	rows := []model.User{}
+	err := e.db.Model(&rows).Select()
+	if err == pg.ErrNoRows {
+		return nil, nil
+	}
+
+	return rows, err
+}
+
+func (e *Env) CreateUser(data *model.User) error {
+	_, err := e.db.Model(data).Insert()
+
+	return err
+}
+
+func (e *Env) CreateTransaction(data *model.Transaction) error {
+	_, err := e.db.Model(data).Insert()
+
+	return err
+}
+
+func (e *Env) UpdateTransaction(data *model.Transaction) error {
+	_, err := e.db.Model(data).WherePK().Update()
+
+	return err
+}
+
+func (e *Env) UpdateUser(data *model.User) error {
+	_, err := e.db.Model(data).WherePK().Update()
+
+	return err
 }

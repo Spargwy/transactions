@@ -5,28 +5,34 @@ package graph
 
 import (
 	"context"
-	"fmt"
-	generated1 "transactions/graph/generated"
+	"transactions/graph/generated"
 	"transactions/model"
+	"transactions/service/registerUser"
+	"transactions/service/replenishTheBalance"
+	"transactions/service/withdrawMoney"
 )
 
-func (r *mutationResolver) WithdrawMoney(ctx context.Context, input *model.WithdrawMoneyInput) (model.WithdrawMoneyOrErrorPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) WithdrawMoney(ctx context.Context, input model.WithdrawMoneyInput) (model.WithdrawMoneyOrErrorPayload, error) {
+	return withdrawMoney.Resolve(r.Env, input)
 }
 
-func (r *mutationResolver) ReplenishTheBalance(ctx context.Context, input *model.ReplenishTheBalanceInput) (model.ReplenishTheBalanceOrErrorPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) ReplenishTheBalance(ctx context.Context, input model.ReplenishTheBalanceInput) (model.ReplenishTheBalanceOrErrorPayload, error) {
+	return replenishTheBalance.Resolve(r.Env, input)
+}
+
+func (r *mutationResolver) RegisterUser(ctx context.Context, input model.RegisterUserInput) (model.RegisterUserOrErrorPayload, error) {
+	return registerUser.Resolve(r.Env, input)
 }
 
 func (r *queryResolver) User(ctx context.Context, id int) (*model.User, error) {
 	return r.Env.GetUserByID(id)
 }
 
-// Mutation returns generated1.MutationResolver implementation.
-func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated1.QueryResolver implementation.
-func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

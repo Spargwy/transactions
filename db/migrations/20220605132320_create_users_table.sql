@@ -1,7 +1,8 @@
 -- migrate:up
 create table users (
     id serial primary key,
-    balance int not null
+    name text,
+    balance int
 )
 
 -- migrate:down
