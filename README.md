@@ -15,7 +15,7 @@
 - `go mod tidy`
 
 ## Run:
-- `docker-compose up -d postgres`
+- `docker-compose up -d`
 - `dbmate up`
 - `make apply` - create user(its possible from api)
 - `cd client && ./scripts dev`
