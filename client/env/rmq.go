@@ -1,7 +1,6 @@
 package env
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"transactions/model"
@@ -18,9 +17,6 @@ func (e *Env) CreateUserQueue(userID int) (amqp.Queue, error) {
 		false,
 		false,
 		nil)
-	if err != nil {
-		return amqp.Queue{}, fmt.Errorf("failed to QueueDeclare: %v", err)
-	}
 
 	return q, err
 }
