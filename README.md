@@ -1,4 +1,6 @@
 
+Simple service for realize transactions(+- in DB) with RabbitMQ as message broker.
+
 ## Stack:
 - Golang
 - GraphQ: [gqlgen](github.com/99designs/gqlgen)
